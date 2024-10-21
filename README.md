@@ -9,8 +9,8 @@ This project automates the assignment and rating of household chores using Googl
   - Rotates the list of names for the next round of assignments.
   - Sends an email with:
     - Chore assignments for the week.
-    - A random dog image to brighten your day.
-    - An uplifting quote to inspire positivity.
+    - A random dog image
+    - An uplifting quote
   
 - **Google Form for Chore Rating**:
   - Automatically creates a Google Form each week to collect ratings for each person's performance.
@@ -50,27 +50,6 @@ This project automates the assignment and rating of household chores using Googl
    - Manually adjust the form settings (if needed) in Google Forms to:
      - Make the form accessible to anyone with the link.
      - Optionally limit each person to one submission by enabling "Limit to 1 response" in the form settings.
-
-## Usage
-
-1. **Weekly Chore Assignment**:
-   - Each week, the script will send an email with chore assignments and a link to the form for rating performance.
-
-2. **Form Submission**:
-   - House members submit their ratings through the Google Form.
-   
-3. **Weekly Report**:
-   - A summary email is sent out every Wednesday, detailing the average ratings for each chore, or notifying recipients if no ratings were submitted.
-
-## Example Emails
-
-- **Chore Assignment Email**: 
-  - Subject: `[IMPORTANT] Apt 306 Chores: Week of [Date]`
-  - Body: Includes chore assignments, a link to the rating form, a random dog image, and a quote of the day.
-
-- **Weekly Rating Report Email**:
-  - Subject: `Apt 306 Chore Averages - Week of [Date]`
-  - Body: Summarizes the average ratings for each person. If no responses were collected, the email will mention that no one submitted ratings.
 
 ## API Configuration
 
