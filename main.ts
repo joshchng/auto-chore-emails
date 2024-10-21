@@ -1,6 +1,6 @@
 function main(): void {
   const spreadsheet = SpreadsheetApp.openById(
-    "1Mdzq6zfKQW2_y_kI_WqWMHft0l_dGnMlIdHjhe5Qa24"
+    "1nvoB2QxuOM_3_9LFGrRh8ICTtvYr3jdDkzNuIbEOUFM"
   );
   const sheet = spreadsheet.getSheetByName("Chores");
   if (!sheet) {
@@ -123,7 +123,8 @@ function main(): void {
   }
 
   // Send the email
-  const emailString = "joshschang@berkeley.edu";
+  const emailString =
+    "joshschang@berkeley.edu, estseng@berkeley.edu, abrahamkwok628@gmail.com, aditgupta.agupta@gmail.com";
   MailApp.sendEmail({
     to: emailString,
     subject: emailName,
@@ -238,7 +239,8 @@ function sendAveragesEmail(
   lastSundayString: string
 ): void {
   const emailSubject = `Apt 306 Chore Averages - Week of ${lastSundayString}`;
-  const recipients = "joshschang@berkeley.edu";
+  const recipients =
+    "joshschang@berkeley.edu, estseng@berkeley.edu, abrahamkwok628@gmail.com, aditgupta.agupta@gmail.com";
 
   let emailBody = `<p><strong>Chore Averages for Week of ${lastSundayString}:</strong></p>`;
   emailBody += `<table border='1' style='border-collapse: collapse;'><tr><th>Name</th><th>Average Rating</th></tr>`;
@@ -261,7 +263,8 @@ function sendAveragesEmail(
 
 function sendNoResponseEmail(lastSundayString: string): void {
   const emailSubject = `No Chore Ratings for Week of ${lastSundayString}`;
-  const recipients = "joshschang@berkeley.edu";
+  const recipients =
+    "joshschang@berkeley.edu, estseng@berkeley.edu, abrahamkwok628@gmail.com, aditgupta.agupta@gmail.com";
 
   const emailBody = `<p>No one filled out the sheet last week! I guess everyone was happy with the cleanliness.</p>`;
 
