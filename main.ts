@@ -1,19 +1,25 @@
-function main() {
-  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = spreadsheet.getSheetByName("Chores");
+function main(): void {
+  const spreadsheet = SpreadsheetApp.openById(
+    "1Mdzq6zfKQW2_y_kI_WqWMHft0l_dGnMlIdHjhe5Qa24"
+  );
+  const sheet = spreadsheet.getSheetByName("Chores");
   if (!sheet) {
-    Logger.log("Chores sheet not found");
+    console.log("Chores sheet not found");
     return;
   }
-  var range = sheet.getDataRange();
-  var array = range.getValues();
-  var choreArray = array[0]; // ['Trash', 'Bathroom', 'Floor', 'Dishes']
-  var nameArray = array[1]; // ['Adit', 'Abe', 'Josh', 'Enoch']
+  const range = sheet.getDataRange();
+  const array = range.getValues();
+  const choreArray: string[] = array[0]; // ['Trash', 'Bathroom', 'Floor', 'Dishes']
+  const nameArray: string[] = array[1]; // ['Adit', 'Abe', 'Josh', 'Enoch']
+
+  const lastSunday = getLastSunday();
+  const lastSundayString = lastSunday.toDateString();
+
+  const responsesName = `Apt 306 Chores Rating - Week of ${lastSundayString} (Responses)`;
+  const emailName = `[IMPORTANT] Apt 306 Chores: ${lastSundayString}`;
 
   // Create a new form
-  var form = FormApp.create(
-    "Apt 306 Chores Rating - Week of " + new Date().toDateString()
-  );
+  const form = FormApp.create(responsesName);
   form
     .addPageBreakItem()
     .setHelpText(
@@ -21,16 +27,16 @@ function main() {
     );
 
   // Add questions to the form for each chore
-  for (var i = 0; i < choreArray.length; i++) {
+  for (let i = 0; i < choreArray.length; i++) {
     form
       .addPageBreakItem()
-      .setTitle(choreArray[i] + " Section")
+      .setTitle(`${choreArray[i]} Section`)
       .setHelpText(
-        "Please rate " + nameArray[i] + "'s performance on " + choreArray[i]
+        `Please rate ${nameArray[i]}'s performance on ${choreArray[i]}`
       );
     form
       .addMultipleChoiceItem()
-      .setTitle("Rate cleanliness (" + nameArray[i] + ")")
+      .setTitle(`Rate cleanliness (${nameArray[i]})`)
       .setChoiceValues([
         "1 - Poor",
         "2 - Below Average",
@@ -40,7 +46,7 @@ function main() {
       ]);
     form
       .addMultipleChoiceItem()
-      .setTitle("Rate timeliness (" + nameArray[i] + ")")
+      .setTitle(`Rate timeliness (${nameArray[i]})`)
       .setChoiceValues([
         "1 - Poor",
         "2 - Below Average",
@@ -49,135 +55,221 @@ function main() {
         "5 - Excellent",
       ]);
   }
+  console.log("NEW FORM CREATED");
+  // Create a new spreadsheet for this week's form responses
+  const folderId = "1mWIrf-ZQWC9DdacABMY-FV5bBKn-B_lI";
+  const folder = DriveApp.getFolderById(folderId);
+  const newSpreadsheet = SpreadsheetApp.create(responsesName);
+  console.log("NEW SPREADSHEET CREATED");
+  // Move the new spreadsheet to the folder
+  const file = DriveApp.getFileById(newSpreadsheet.getId());
+  file.moveTo(folder);
 
-  // Rotate the chore assignments after creating form
-  var backEl = nameArray.pop();
-  var backElArray = [backEl];
-  var updateArray = backElArray.concat(nameArray);
+  // Link the form responses to the new spreadsheet
+  const destination = FormApp.DestinationType.SPREADSHEET;
+  form.setDestination(destination, newSpreadsheet.getId());
+  console.log("SPREADSHEET LINKED TO FORM");
+  // Rotate the chore assignments after creating the form
+  const backEl = nameArray.pop() as string;
+  const updateArray = [backEl].concat(nameArray);
   range.setValues([choreArray, updateArray]);
 
-  //update the variables
-  var range = sheet.getDataRange();
-  var array = range.getValues();
-  var choreArray = array[0]; // ['Trash', 'Bathroom', 'Floor', 'Dishes']
-  var nameArray = array[1]; // ['Enoch','Adit', 'Abe', 'Josh'] ENOCH MOVED TO BACK OF QUEUE
+  // Update the variables again
+  const updatedRange = sheet.getDataRange();
+  const updatedArray = updatedRange.getValues();
+  const updatedChoreArray: string[] = updatedArray[0];
+  const updatedNameArray: string[] = updatedArray[1];
 
   // Get the form's URL to include in the email
-  var formUrl = form.getPublishedUrl();
+  const formUrl = form.getPublishedUrl();
 
-  var returnString = "<p><strong>Chores for this week:</strong><br><br>";
-  for (var i = 0; i < choreArray.length; i++) {
-    returnString +=
-      "<strong>" + choreArray[i] + ":</strong> " + nameArray[i] + "<br>";
+  let returnString = "<p><strong>Chores for this week:</strong><br><br>";
+  for (let i = 0; i < updatedChoreArray.length; i++) {
+    returnString += `<strong>${updatedChoreArray[i]}:</strong> ${updatedNameArray[i]}<br>`;
   }
   returnString += "</p>";
 
   returnString +=
     "<p><strong>Please rate everyone's performance for the week:</strong></p>";
-  returnString +=
-    "<p>Fill out the form here: <a href='" +
-    formUrl +
-    "'>Chore Rating Form</a></p>";
+  returnString += `<p>Fill out the form here: <a href='${formUrl}'>Chore Rating Form</a></p>`;
 
   // Add random dog image to email
-  var dogApiUrl = "https://dog.ceo/api/breed/shiba/images/random";
-  var dogResponse = UrlFetchApp.fetch(dogApiUrl);
-  var dogJson = JSON.parse(dogResponse.getContentText());
-  var imageUrl = dogJson.message;
+  const dogApiUrl = "https://dog.ceo/api/breed/shiba/images/random";
+  const dogResponse = UrlFetchApp.fetch(dogApiUrl);
+  const dogJson = JSON.parse(dogResponse.getContentText());
+  const imageUrl = dogJson.message;
 
   returnString +=
     "<p><strong>Here's a random Shiba image to brighten your day:</strong></p>";
-  returnString +=
-    "<img src='" +
-    imageUrl +
-    "' alt='Random Shiba' style='width:300px;height:auto;'><br>";
+  returnString += `<img src='${imageUrl}' alt='Random Shiba' style='width:300px;height:auto;'><br>`;
 
   // Add quote of the day
-  var category = "happiness";
-  var quoteApiUrl = "https://api.api-ninjas.com/v1/quotes?category=" + category;
+  const category = "happiness";
+  const quoteApiUrl = `https://api.api-ninjas.com/v1/quotes?category=${category}`;
   try {
-    var quoteResponse = UrlFetchApp.fetch(quoteApiUrl, {
+    const quoteResponse = UrlFetchApp.fetch(quoteApiUrl, {
       method: "get",
       headers: { "X-Api-Key": "O1hqdkyVYugsIM6dwJ5F4Q==oYxj2wrSMkVpv72A" },
       muteHttpExceptions: true,
     });
-    var quoteJson = JSON.parse(quoteResponse.getContentText());
-    var quote = quoteJson[0].quote;
-    var author = quoteJson[0].author;
+    const quoteJson = JSON.parse(quoteResponse.getContentText());
+    const quote = quoteJson[0].quote;
+    const author = quoteJson[0].author;
 
     returnString += "<p><strong>Quote of the day:</strong></p>";
-    returnString +=
-      "<blockquote>" + quote + "<br>- " + author + "</blockquote>";
+    returnString += `<blockquote>${quote}<br>- ${author}</blockquote>`;
   } catch (error) {
     returnString += "<p>Could not fetch quote of the day.</p>";
   }
 
-  // Send the email, estseng@berkeley.edu, abrahamkwok628@gmail.com, aditgupta.agupta@gmail.com
-  var emailString =
-    "joshschang@berkeley.edu, estseng@berkeley.edu, abrahamkwok628@gmail.com, aditgupta.agupta@gmail.com";
-  var weekString = "[IMPORTANT] Apt 306 Chores: " + new Date().toDateString();
-
+  // Send the email
+  const emailString = "joshschang@berkeley.edu";
   MailApp.sendEmail({
     to: emailString,
-    subject: weekString,
+    subject: emailName,
     htmlBody: returnString,
   });
+  console.log("EMAIL SENT");
 }
 
-function calculateAverages() {
-  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  var responseSheet = spreadsheet.getSheetByName("Form Responses 8"); // This should be the name of the responses sheet
-  if (!responseSheet) {
-    Logger.log("Response sheet not found");
+function getLastSunday(): Date {
+  const today = new Date();
+  const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  const lastSunday = new Date(today);
+  lastSunday.setDate(today.getDate() - dayOfWeek); // Subtract the current day of the week to get the last Sunday
+  return lastSunday;
+}
+
+function reportAverages(): void {
+  calculateAverages();
+  const choreFolder = DriveApp.getFolderById(
+    "1mWIrf-ZQWC9DdacABMY-FV5bBKn-B_lI"
+  );
+  const lastSunday = getLastSunday();
+  const lastSundayString = lastSunday.toDateString();
+
+  const expectedName = `Apt 306 Chores Rating - Week of ${lastSundayString} (Responses)`;
+  const files = choreFolder.getFilesByName(expectedName);
+  let file: GoogleAppsScript.Drive.File | null = null;
+
+  if (files.hasNext()) {
+    file = files.next();
+    console.log(`Found file: ${file.getName()}`);
+  } else {
+    sendNoResponseEmail(lastSundayString);
     return;
   }
 
-  var dataRange = responseSheet.getDataRange(); // Get all the responses data
-  var data = dataRange.getValues(); // Array of responses data
+  const spreadsheet = SpreadsheetApp.openById(file.getId());
+  const averageSheet = spreadsheet.getSheetByName("Averages");
+
+  if (!averageSheet || averageSheet.getLastRow() < 2) {
+    sendNoResponseEmail(lastSundayString);
+  } else {
+    const averagesData = averageSheet
+      .getRange(2, 1, averageSheet.getLastRow() - 1, 2)
+      .getValues();
+    sendAveragesEmail(averagesData, lastSundayString);
+  }
+}
+function calculateAverages(): void {
+  const choreFolder = DriveApp.getFolderById(
+    "1mWIrf-ZQWC9DdacABMY-FV5bBKn-B_lI"
+  );
+  const lastSunday = getLastSunday();
+  const lastSundayString = lastSunday.toDateString();
+
+  const expectedName = `Apt 306 Chores Rating - Week of ${lastSundayString} (Responses)`;
+  const files = choreFolder.getFilesByName(expectedName);
+  let file: GoogleAppsScript.Drive.File | null = null;
+
+  if (files.hasNext()) {
+    file = files.next();
+    console.log(`Found file: ${file.getName()}`);
+  } else {
+    throw new Error("Did not find file, no responses yet for this week");
+  }
+
+  const spreadsheet = SpreadsheetApp.openById(file.getId());
+  const sheet = spreadsheet.getSheets()[0];
+  const dataRange = sheet.getDataRange();
+  const data = dataRange.getValues();
 
   if (data.length < 2) {
-    Logger.log("No responses found");
+    console.log("No responses found");
     return;
   }
 
-  // Get the headers from the first row (question titles)
-  var headers = data[0];
+  const headers = data[0];
 
-  // Create a new sheet for averages or clear an existing one
-  var averageSheet = spreadsheet.getSheetByName("Averages");
+  let averageSheet = spreadsheet.getSheetByName("Averages");
   if (!averageSheet) {
     averageSheet = spreadsheet.insertSheet("Averages");
   } else {
-    averageSheet.clear(); // Clear existing data in case the sheet already exists
+    averageSheet.clear();
   }
 
-  // Write headers for the Averages sheet
   averageSheet.appendRow(["Name", "Average Rating"]);
 
-  // Loop through each question (each person to rate) starting from the 2nd column
-  for (var col = 1; col < headers.length; col++) {
-    var personName = headers[col]; // The name of the person or chore being rated
-    var totalRatings = 0;
-    var numberOfRatings = 0;
+  for (let col = 1; col < headers.length; col++) {
+    const personName = headers[col];
+    let totalRatings = 0;
+    let numberOfRatings = 0;
 
-    // Loop through each response row to collect the ratings for this person
-    for (var row = 1; row < data.length; row++) {
-      var rating = data[row][col];
-
+    for (let row = 1; row < data.length; row++) {
+      const rating = data[row][col];
       if (rating !== "") {
-        // Ensure the rating is not blank
         totalRatings += parseInt(rating);
         numberOfRatings++;
       }
     }
 
-    // Calculate the average rating for this person
-    var averageRating =
+    const averageRating =
       numberOfRatings > 0 ? (totalRatings / numberOfRatings).toFixed(2) : 0;
 
-    // Write the person's name and average rating to the Averages sheet
     averageSheet.appendRow([personName, averageRating]);
   }
 
-  Logger.log("Averages calculated and updated in the Averages sheet.");
+  console.log("Averages calculated and updated in the Averages sheet.");
+}
+
+function sendAveragesEmail(
+  averagesData: string[][],
+  lastSundayString: string
+): void {
+  const emailSubject = `Apt 306 Chore Averages - Week of ${lastSundayString}`;
+  const recipients = "joshschang@berkeley.edu";
+
+  let emailBody = `<p><strong>Chore Averages for Week of ${lastSundayString}:</strong></p>`;
+  emailBody += `<table border='1' style='border-collapse: collapse;'><tr><th>Name</th><th>Average Rating</th></tr>`;
+
+  for (let i = 0; i < averagesData.length; i++) {
+    emailBody += `<tr><td>${averagesData[i][0]}</td><td>${averagesData[i][1]}</td></tr>`;
+  }
+
+  emailBody += `</table>`;
+  emailBody += `<p>These averages are based on the ratings provided for the chores performed last week. Keep up the great work!</p>`;
+
+  MailApp.sendEmail({
+    to: recipients,
+    subject: emailSubject,
+    htmlBody: emailBody,
+  });
+
+  console.log("Averages email sent to the apartment members.");
+}
+
+function sendNoResponseEmail(lastSundayString: string): void {
+  const emailSubject = `No Chore Ratings for Week of ${lastSundayString}`;
+  const recipients = "joshschang@berkeley.edu";
+
+  const emailBody = `<p>No one filled out the sheet last week! I guess everyone was happy with the cleanliness.</p>`;
+
+  MailApp.sendEmail({
+    to: recipients,
+    subject: emailSubject,
+    htmlBody: emailBody,
+  });
+
+  console.log("No response email sent to the apartment members.");
 }
