@@ -14,12 +14,16 @@ function main(): void {
 
   const lastSunday = getLastSunday();
   const lastSundayString = lastSunday.toDateString();
-
-  const responsesName = `Apt 306 Chores Rating - Week of ${lastSundayString} (Responses)`;
+  const secondToLastSunday = getSecondToLastSunday();
+  const secondToLastSundayString = secondToLastSunday.toDateString();
+  const formName = `Apt 306 Chores Rating - Week of ${secondToLastSundayString}`;
+  const responsesName = `Apt 306 Chores Rating - Week of ${secondToLastSundayString} (Responses)`;
   const emailName = `[IMPORTANT] Apt 306 Chores: ${lastSundayString}`;
 
   // Create a new form
-  const form = FormApp.create(responsesName);
+  const form = FormApp.create(formName);
+  form.setProgressBar(true);
+  form.setConfirmationMessage("Thanks for doing the form this week!");
   form
     .addPageBreakItem()
     .setHelpText(
@@ -90,7 +94,7 @@ function main(): void {
   returnString += "</p>";
 
   returnString +=
-    "<p><strong>Please rate everyone's performance for the week:</strong></p>";
+    "<p><strong>Please rate everyone's performance for the week (it's anonymous):</strong></p>";
   returnString += `<p>Fill out the form here: <a href='${formUrl}'>Chore Rating Form</a></p>`;
 
   // Add random dog image to email
@@ -141,15 +145,22 @@ function getLastSunday(): Date {
   return lastSunday;
 }
 
+function getSecondToLastSunday(): Date {
+  const lastSunday = getLastSunday();
+  const secondToLastSunday = new Date(lastSunday);
+  secondToLastSunday.setDate(lastSunday.getDate() - 7);
+  return secondToLastSunday;
+}
+
 function reportAverages(): void {
   calculateAverages();
   const choreFolder = DriveApp.getFolderById(
     "1mWIrf-ZQWC9DdacABMY-FV5bBKn-B_lI"
   );
-  const lastSunday = getLastSunday();
-  const lastSundayString = lastSunday.toDateString();
+  const secondToLastSunday = getSecondToLastSunday();
+  const secondToLastSundayString = secondToLastSunday.toDateString();
 
-  const expectedName = `Apt 306 Chores Rating - Week of ${lastSundayString} (Responses)`;
+  const expectedName = `Apt 306 Chores Rating - Week of ${secondToLastSundayString} (Responses)`;
   const files = choreFolder.getFilesByName(expectedName);
   let file: GoogleAppsScript.Drive.File | null = null;
 
@@ -157,7 +168,7 @@ function reportAverages(): void {
     file = files.next();
     console.log(`Found file: ${file.getName()}`);
   } else {
-    sendNoResponseEmail(lastSundayString);
+    sendNoResponseEmail(secondToLastSundayString);
     return;
   }
 
@@ -165,22 +176,23 @@ function reportAverages(): void {
   const averageSheet = spreadsheet.getSheetByName("Averages");
 
   if (!averageSheet || averageSheet.getLastRow() < 2) {
-    sendNoResponseEmail(lastSundayString);
+    sendNoResponseEmail(secondToLastSundayString);
   } else {
     const averagesData = averageSheet
       .getRange(2, 1, averageSheet.getLastRow() - 1, 2)
       .getValues();
-    sendAveragesEmail(averagesData, lastSundayString);
+    sendAveragesEmail(averagesData, secondToLastSundayString);
   }
 }
 function calculateAverages(): void {
   const choreFolder = DriveApp.getFolderById(
     "1mWIrf-ZQWC9DdacABMY-FV5bBKn-B_lI"
   );
-  const lastSunday = getLastSunday();
-  const lastSundayString = lastSunday.toDateString();
 
-  const expectedName = `Apt 306 Chores Rating - Week of ${lastSundayString} (Responses)`;
+  const secondToLastSunday = getSecondToLastSunday();
+  const secondToLastSundayString = secondToLastSunday.toDateString();
+
+  const expectedName = `Apt 306 Chores Rating - Week of ${secondToLastSundayString} (Responses)`;
   const files = choreFolder.getFilesByName(expectedName);
   let file: GoogleAppsScript.Drive.File | null = null;
 
@@ -236,13 +248,13 @@ function calculateAverages(): void {
 
 function sendAveragesEmail(
   averagesData: string[][],
-  lastSundayString: string
+  secondToLastSundayString: string
 ): void {
-  const emailSubject = `Apt 306 Chore Averages - Week of ${lastSundayString}`;
+  const emailSubject = `Apt 306 Chore Averages - Week of ${secondToLastSundayString}`;
   const recipients =
     "joshschang@berkeley.edu, estseng@berkeley.edu, abrahamkwok628@gmail.com, aditgupta.agupta@gmail.com";
 
-  let emailBody = `<p><strong>Chore Averages for Week of ${lastSundayString}:</strong></p>`;
+  let emailBody = `<p><strong>Chore Averages for Week of ${secondToLastSundayString}:</strong></p>`;
   emailBody += `<table border='1' style='border-collapse: collapse;'><tr><th>Name</th><th>Average Rating</th></tr>`;
 
   for (let i = 0; i < averagesData.length; i++) {
@@ -261,8 +273,8 @@ function sendAveragesEmail(
   console.log("Averages email sent to the apartment members.");
 }
 
-function sendNoResponseEmail(lastSundayString: string): void {
-  const emailSubject = `No Chore Ratings for Week of ${lastSundayString}`;
+function sendNoResponseEmail(secondToLastSunday: string): void {
+  const emailSubject = `No Chore Ratings for Week of ${secondToLastSunday}`;
   const recipients =
     "joshschang@berkeley.edu, estseng@berkeley.edu, abrahamkwok628@gmail.com, aditgupta.agupta@gmail.com";
 
