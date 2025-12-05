@@ -252,7 +252,7 @@ function sendAveragesEmail(
 ): void {
   const emailSubject = `Apt 306 Chore Averages - Week of ${secondToLastSundayString}`;
   const recipients =
-    "joshschang@berkeley.edu, estseng@berkeley.edu, abrahamkwok628@gmail.com, aditgupta.agupta@gmail.com";
+    "example@email.com";
 
   let emailBody = `<p><strong>Chore Averages for Week of ${secondToLastSundayString}:</strong></p>`;
   emailBody += `<table border='1' style='border-collapse: collapse;'><tr><th>Name</th><th>Average Rating</th></tr>`;
