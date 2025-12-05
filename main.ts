@@ -128,7 +128,7 @@ function main(): void {
 
   // Send the email
   const emailString =
-    "joshschang@berkeley.edu, estseng@berkeley.edu, abrahamkwok628@gmail.com, aditgupta.agupta@gmail.com";
+    "example@email.com";
   MailApp.sendEmail({
     to: emailString,
     subject: emailName,
@@ -276,7 +276,7 @@ function sendAveragesEmail(
 function sendNoResponseEmail(secondToLastSunday: string): void {
   const emailSubject = `No Chore Ratings for Week of ${secondToLastSunday}`;
   const recipients =
-    "joshschang@berkeley.edu, estseng@berkeley.edu, abrahamkwok628@gmail.com, aditgupta.agupta@gmail.com";
+    "example@email.com";
 
   const emailBody = `<p>No one filled out the sheet last week! I guess everyone was happy with the cleanliness.</p>`;
 
